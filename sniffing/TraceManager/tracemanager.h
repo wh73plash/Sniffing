@@ -1,3 +1,10 @@
+//
+//  tracemanager.h
+//  tracemanager
+//
+//  Created by 김제인 on 2022/01/20.
+//
+
 #ifndef tracemanager_h
 #define tracemanager_h
 
@@ -31,6 +38,7 @@ private:
     }
     
 public:
+    // 기본 경로
     inline void static AddLog(std::string log){
         try{
             std::FILE* fp = NULL;
@@ -64,6 +72,7 @@ public:
         }
     }
     
+    // 경로 지정
     inline void static AddLog(std::string state, std::string title, std::string contents){
         try{
             std::FILE* fp = NULL;

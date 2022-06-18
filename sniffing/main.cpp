@@ -45,13 +45,13 @@ inline bool callback_libtins(tins::PDU &packet){
         const tins::TCP &tcp = packet.rfind_pdu<tins::TCP>();
 //        const TCP* tcp1 = packet.find_pdu<TCP>(); reference find
 //        if(tcp.dport()!=80&&tcp.sport()!=80) return true; //parsing HTTP Packet
-        
+
         std::cout << "TCP Source Port : " << tcp.sport() << std::endl;
         std::cout << "TCP Destination Port : " << tcp.dport() << std::endl;
-        
+
 //        const tins::RawPDU &rawPDU = packet.rfind_pdu<tins::RawPDU>();
 //        std::cout << "Payload Size : " << rawPDU.size() << std::endl;
-        
+
         return true;
     }catch(exception ex){
 //        TraceManager::AddLog(ex.what());
@@ -64,53 +64,53 @@ inline void capture_pcap_functions(){
     char* dev; //name of pressent working network device
     char* net; //network address
     char* mask; //network mask address
-    
+
     int ret;
     char errbuf[PCAP_ERRBUF_SIZE];
     bpf_u_int32 netp; //ip
     bpf_u_int32 maskp; //submet mask
     struct in_addr addr;
-    
+
     //get network device name
     dev = pcap_lookupdev(errbuf);
-    
+
     //error
     if(dev == NULL){
         std::cout << errbuf << std::endl;
         exit(EXIT_FAILURE);
     }
-    
+
     //print network device name
     std::cout << "DEV : " << dev << std::endl;
-    
+
     //get mask and ip with respect to network device dev
     ret = pcap_lookupnet(dev, &netp, &maskp, errbuf);
-    
+
     if(ret == -1){
         std::cout << errbuf << std::endl;
         exit(EXIT_FAILURE);
     }
-    
+
     //convert network address
     addr.s_addr = netp;
     net = inet_ntoa(addr);
-    
+
     if(net == NULL){
         std::perror("inet_ntoa");
         exit(EXIT_FAILURE);
     }
-    
+
     //convert mask address
     addr.s_addr = maskp;
     mask = inet_ntoa(addr);
-    
+
     if(mask == NULL){
         std::perror("inet_ntoa");
         exit(EXIT_FAILURE);
     }
-    
+
     std::cout << "MASK : " << mask << std::endl;
-    
+
     return;
 }
 
@@ -118,10 +118,10 @@ inline bool recvPacket(pcap_t* pcd, uint8_t** packetData, int& dataLen){
     const u_char *pkt_data;
     struct pcap_pkthdr *pktHeader;
     int valueOfNextEx;
-    
+
     while(true){
         valueOfNextEx = pcap_next_ex(pcd, &pktHeader, &pkt_data);
-        
+
         switch (valueOfNextEx){
             case 1:
                 *packetData = (uint8_t*)pkt_data;
@@ -133,7 +133,7 @@ inline bool recvPacket(pcap_t* pcd, uint8_t** packetData, int& dataLen){
             case -1:
                 perror("pcap_next_ex function has an error");
                 exit(EXIT_FAILURE);
-                
+
             case -2:
                 std::cout << "the packet have reached EOF" << std::endl;
                 exit(EXIT_SUCCESS);
@@ -148,16 +148,16 @@ inline void pcap_sec_t(){
     uint8_t* packetData;
     int dataLen;
     pcap_t* pcd;
-    
+
     if((pcd = pcap_open_live(pcap_lookupdev(errBuffer), BUFSIZ, NONPROMISCUOUS, 1, errBuffer)) == NULL){
         perror("pcap_open_live error");
     }
-        
+
     if(recvPacket(pcd, &packetData, dataLen)){
             std::cout << "Packet Come in" << std::endl;
             //packet saved in packetData
             //packet capture length saved in dataLen
-            
+
             /***************example Code*****************/
             /*
              struct ether_header *ep= (struct ether_header*)packetData;
@@ -204,7 +204,7 @@ int32_t main(const int32_t argc, const char** argv, const char** env) {
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
     std::cout.tie(nullptr);
-    
+
     char errbuf[PCAP_ERRBUF_SIZE];
     pcd_info_t lpcd_info;
     pcap_if_t *alldevps;
@@ -212,7 +212,7 @@ int32_t main(const int32_t argc, const char** argv, const char** env) {
 
     std::memset((void *)&lpcd_info, 0x00, sizeof(lpcd_info));
     pcap_findalldevs(&alldevps, errbuf);
-    
+
     while(true){
         if((alldevps->flags != PCAP_IF_LOOPBACK)){
             si = (struct sockaddr_in *)alldevps->addresses->addr;
@@ -228,29 +228,29 @@ int32_t main(const int32_t argc, const char** argv, const char** env) {
         }
         alldevps = alldevps->next;
     }
-    
+
 //    이더넷 데이터 구조체
     struct ifreq *ifr;
     struct sockaddr_in *sin;
-     
+
 //    이더넷 설정 구조체
     struct ifconf ifcfg;
     int fd;
     int n;
     int numreqs = 30;
     fd = socket(AF_INET, SOCK_DGRAM, 0);
-    
+
 //    이더넷 설정정보를 가지고오기 위해서
 //    설정 구조체를 초기화하고
 //    ifreq데이터는 ifc_buf에 저장되며,
 //    네트워크 장치가 여러개 있을 수 있으므로 크기를 충분히 잡아주어야 한다.
 //    보통은 루프백주소와 하나의 이더넷카드, 2개의 장치를 가진다.
-    
+
     std::memset(&ifcfg, 0, sizeof(ifcfg));
     ifcfg.ifc_buf = NULL;
     ifcfg.ifc_len = sizeof(struct ifreq) * numreqs;
     ifcfg.ifc_buf = (char*)std::malloc(sizeof(char) * ifcfg.ifc_len);
-    
+
     while(true){
         ifcfg.ifc_len = sizeof(struct ifreq) * numreqs;
         ifcfg.ifc_buf = (char*)realloc(ifcfg.ifc_buf, ifcfg.ifc_len);
@@ -268,7 +268,7 @@ int32_t main(const int32_t argc, const char** argv, const char** env) {
 //    알 수 있다.
 //    std::printf("address %d\n", &ifcfg.ifc_req);
 //    std::printf("address %d\n", &ifcfg.ifc_buf);
-    
+
 //    네트워크 장치의 정보를 얻어온다.
 //    보통 루프백과 하나의 이더넷 카드를 가지고 있을 것이므로
 //    2개의 정보를 출력할 것이다.
@@ -304,22 +304,21 @@ int32_t main(const int32_t argc, const char** argv, const char** env) {
 //        std::printf("MTU   %d\n", ifr->ifr_mtu);
         buffer_class.MTU = ifr->ifr_mtu;
         ifr++;
-        
+
         pack.netdev_list.push_back(buffer_class);
     }
-    
-    
-    for(const auto& i : pack.dev_list){
-        std::cout << i.flags << " : " << i.name << " : " << i.sin_addr << std::endl;
-    }
-    
-    for(int i = 0; i < 5; ++i){
-        std::cout << std::endl;
-    }
-    
+
+
+//    for(const auto& i : pack.dev_list){
+//        std::cout << i.flags << " : " << i.name << " : " << i.sin_addr << std::endl;
+//    }
+
     for(const auto& i : pack.netdev_list){
-        std::cout << "name : " << i.name << " \nIP : " << i.IP << " \nBROD : " << i.BROD << " \nMASK : " << i.MASK << " \nMTU : " << i.MTU << "\n\n\n";
+        if(std::strcmp(i.name.c_str(), "") == 0){
+            continue;
+        }
+        std::cout << "name : [" << i.name << "]\nIP : [" << i.IP << "] \nBROD : [" << i.BROD << "] \nMASK : [" << i.MASK << "] \nMTU : [" << i.MTU << "]\n\n";
     }
-    
+
     return EXIT_SUCCESS;
 }
